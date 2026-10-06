@@ -31,14 +31,14 @@
 | 모바일 생명주기 | OnApplicationPause/Focus, 네트워크 변경 대응 | 실기기 시연 |
 | 성능 | 몬스터 300마리 + 유닛 50기에서 모바일 60fps, 전투 중 GC Alloc 0 | Profiler Before/After |
 | 리소스 | Addressables로 리소스 로드/해제 | 메모리 프로파일 |
-| 툴 | Excel/CSV → JSON + C# 데이터 클래스 자동 생성, 유효성 검사 | 에디터 툴 GIF |
+| 툴 | Google Sheets → JSON + C# 데이터 클래스 자동 생성, 유효성 검사 | 에디터 툴 GIF |
 | 공통 | **같은 데이터 테이블을 클라·서버가 공유** | 파이프라인 다이어그램 |
 | 품질 | Unity Test Framework + GitHub Actions 빌드/테스트 | CI 배지 |
 
 ## 4. 시스템 구성
 ```
-[Excel/CSV 기획 테이블]
-        │  (DataTool: 변환 + 검증 + 코드 생성)
+[Google Sheets 기획 테이블]
+        │  (DataTool: 다운로드 + 검증 + 변환 + 코드 생성)
         ▼
    JSON 테이블 ──────────────────────┐
         │                             │
@@ -57,23 +57,36 @@ CasualGameProject/
 ├─ Client/      Unity 6 프로젝트 (6000.3.11f1)
 ├─ Server/      ASP.NET Core (Web API + WebSocket)
 ├─ Shared/      패킷 정의, 에러 코드 (클라·서버 공용 C#)
-├─ DataTable/   원본 Excel/CSV + 변환된 JSON
+├─ DataTable/   Google Sheets에서 변환한 JSON (직접 수정 금지)
 └─ Docs/        기획, 설계, 트러블슈팅 문서
 ```
 
 ## 6. 마일스톤
+> 세부 일정과 진행 상황은 Notion에서 관리한다.
+
 | 단계 | 내용 | 완료 기준 |
 |---|---|---|
 | M0 | 저장소 구조 정리, 에셋 이관, UniTask/DOTween/Addressables 설치 | 빈 씬에서 에셋 정상 로드 |
 | M1 | 코어 루프(오프라인): 경로 이동, 소환, 합성, 웨이브, 패배 | 한 판 플레이 가능 |
-| M2 | DataTool: 테이블 → JSON/C# 생성, 런타임 로드 | 수치를 Excel로만 수정 |
+| M2 | DataTool: 테이블 → JSON/C# 생성, 런타임 로드 | 수치를 Google Sheets로만 수정 |
 | M3 | Server: HTTP 로그인/랭킹 + WebSocket 세션(소환/합성 서버 확정) | 서버 결과대로 플레이 |
 | M4 | 재접속·상태 복구, 모바일 생명주기, 에러 코드 처리 | 비행기 모드 시연 통과 |
 | M5 | 최적화, 테스트, CI, 문서화 | 3장 수치 달성, README 완성 |
 
 ## 7. 규칙
-- **유료 에셋 보호**: 저장소는 Private 유지. 외부 에셋은 `Client/Assets/ThirdParty/`에 모아두고, 공개할 때는 스크립트만 공개
+- **유료 에셋 보호**: 저장소는 Private 유지. 외부 에셋은 `Client/Assets/99.ThirdParty/`에 모아두고, 공개할 때는 스크립트만 공개
 - **회사 프로젝트(BunkerDefense)의 코드·에셋·기획 문서는 사용하지 않음.** 처음부터 직접 설계
 - AI가 작성한 코드는 이해하고 설명할 수 있을 때만 커밋
 - 문제 해결 과정은 `Docs/Troubleshooting/`에 바로 기록 (문제 → 원인 → 해결 → 결과)
 - 커밋 컨벤션: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`
+- Google Sheets 인증 키(`credentials*.json`, `service-account*.json`)는 절대 커밋하지 않음
+
+## 8. 도구별 역할
+| 도구 | 원본으로 관리할 것 |
+|---|---|
+| Notion | 일정, 할 일, 마일스톤 진행 상황, 기획 아이디어 |
+| Git `Docs/` (Obsidian으로 편집) | 기술 설계, 프로토콜, 규칙, 트러블슈팅 |
+| Google Sheets | 게임 데이터 원본 (유닛, 몬스터, 웨이브, 확률) |
+| Git `DataTable/` | Sheets에서 변환한 JSON. 클라·서버가 실제로 읽는 파일 |
+
+같은 내용을 두 곳에 적지 않는다. 다른 도구의 내용이 필요하면 링크로 연결한다.
