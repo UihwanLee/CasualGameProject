@@ -15,3 +15,11 @@ appsettings.Development.json
 .idea/
 Thumbs.db
 .DS_Store
+
+# Obsidian
+.obsidian/
+.trash/
+
+# Google Sheets 인증 키 (절대 커밋 금지)
+**/credentials*.json
+**/service-account*.json
