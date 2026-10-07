@@ -7,6 +7,9 @@ public static class EventBus
 {
     public static Action<GameState> OnGameStateChanged;     // 게임 상태 변경 시 발생
     public static Action<int> OnGoldChanged;                // 골드 변경 시 발생 (현재 골드)
+    public static Action<int> OnSummonCostChanged;          // 소환 비용 변경 시 발생 (현재 비용)
     public static Action<int> OnWaveStart;                  // 웨이브 시작 시 발생 (웨이브 번호)
     public static Action<int> OnMonsterCountChanged;        // 필드 몬스터 수 변경 시 발생
+    public static Action<Monster> OnMonsterKilled;          // 몬스터 처치 시 발생
+    public static Action<ErrorCode> OnRequestFailed;        // 소환/합성 요청 실패 시 발생
 }
