@@ -15,6 +15,9 @@ public static class Define
 
     #region GameRule
 
+    public const int START_GOLD = 100;             // 시작 골드
+    public const int SUMMON_BASE_COST = 20;        // 첫 소환 비용
+    public const int SUMMON_COST_INCREASE = 2;     // 소환할 때마다 늘어나는 비용
     public const int MAX_MONSTER_COUNT = 100;      // 필드 몬스터 수가 이 값을 넘으면 패배
     public const int MERGE_REQUIRE_COUNT = 3;      // 합성에 필요한 같은 유닛 수
 
@@ -22,7 +25,8 @@ public static class Define
 
     #region PoolKey
 
-    public const string POOL_KEY_MONSTER = "Monster";
+    public const string POOL_KEY_MONSTER = "Monster";      // 실제 키는 Monster_{Id}
+    public const string POOL_KEY_UNIT = "Unit";            // 실제 키는 Unit_{Id}
     public const string POOL_KEY_PROJECTILE = "Projectile";
     public const string POOL_KEY_FLOATING_TEXT = "FloatingText";
 

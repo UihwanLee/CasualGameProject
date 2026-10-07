@@ -33,4 +33,44 @@ namespace CasualGame.Enum
     }
 
     #endregion
+
+    /// <summary>
+    /// Attribute 종류
+    /// </summary>
+    #region AttributeType
+
+    public enum AttributeType
+    {
+        // Condition
+        MaxHp,
+        Hp,
+
+        // Unit Stat
+        Attack,
+        AttackSpeed,
+        Range,
+
+        // Monster Stat
+        MoveSpeed,
+    }
+
+    #endregion
+
+    /// <summary>
+    /// 요청 결과 코드
+    /// </summary>
+    #region ErrorCode
+
+    public enum ErrorCode
+    {
+        Ok = 0,
+        NotEnoughGold = 1001,
+        BoardFull = 1002,
+        InvalidMerge = 1003,
+        DuplicateSeq = 2001,
+        SessionExpired = 3001,
+        ServerError = 9000,
+    }
+
+    #endregion
 }
