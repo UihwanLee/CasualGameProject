@@ -17,7 +17,7 @@ public class GameBootstrapper : MonoBehaviour
     [SerializeField] private CastleView castleView;
 
     [Header("몬스터")]
-    [SerializeField] private MonsterPath monsterPath;
+    [SerializeField] private MonsterSpawnAreaView monsterSpawnArea;
     [SerializeField] private Monster[] monsterPrefabs;
     [SerializeField] private int monsterPoolInitialSize = 20;
 
@@ -60,7 +60,7 @@ public class GameBootstrapper : MonoBehaviour
         CastleService castle = new CastleService(castleView, Define.CASTLE_MAX_HP);
         ServiceLocator.Bind<ICastleService>(castle);
 
-        MonsterSpawnService monsterSpawn = new MonsterSpawnService(dataTable, monsterPool, monsterPath);
+        MonsterSpawnService monsterSpawn = new MonsterSpawnService(dataTable, monsterPool, monsterSpawnArea);
         ServiceLocator.Bind<IMonsterSpawnService>(monsterSpawn);
 
         WaveService wave = new WaveService(dataTable, monsterSpawn);

@@ -35,12 +35,12 @@ namespace CasualGame.Enum
         MaxHp,
         Hp,
 
-        // Unit Stat
+        // 공격 (유닛, 몬스터 공용)
         Attack,
         AttackSpeed,
         Range,
 
-        // Monster Stat
+        // 이동 (몬스터)
         MoveSpeed,
     }
 

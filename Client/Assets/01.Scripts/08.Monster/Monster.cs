@@ -31,13 +31,13 @@ public class Monster : MonoBehaviour
     /// 풀에서 꺼낼 때마다 데이터로 초기화
     /// </summary>
     /// <param name="_data">몬스터 데이터</param>
-    /// <param name="path">따라갈 경로</param>
-    public void Init(MonsterData _data, MonsterPath path)
+    /// <param name="spawnPosition">스폰 위치</param>
+    public void Init(MonsterData _data, Vector3 spawnPosition)
     {
         data = _data;
 
         stat.InitStat(data);
         condition.InitMonsterCondition(data);
-        controller.Init(path);
+        controller.Init(spawnPosition);
     }
 }
