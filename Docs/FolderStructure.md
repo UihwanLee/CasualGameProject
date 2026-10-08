@@ -40,7 +40,7 @@ Where-Are-You-Looking-At 프로젝트의 번호 방식(`00.` 접두사)을 따�
 | `95.GameRule` | 게임 규칙 데이터 |
 | `97.Converter` | 데이터 변환 |
 | `98.Extension` | 확장 메서드 |
-| `99.Service` | 게임 전역 서비스 (GameState, DataTable, Pool, Gold, EventBus) |
+| `99.Service` | 게임 전역 서비스 (GameState, DataTable, Gold, EventBus) |
 | `Editor` | 에디터 툴 (DataTool) |
 
 ## 규칙
