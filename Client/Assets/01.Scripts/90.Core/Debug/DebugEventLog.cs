@@ -21,6 +21,7 @@ public class DebugEventLog : MonoBehaviour
         EventBus.OnSummonCostChanged += LogSummonCost;
         EventBus.OnWaveStart += LogWaveStart;
         EventBus.OnMonsterCountChanged += LogMonsterCount;
+        EventBus.OnCastleHpChanged += LogCastleHp;
         EventBus.OnRequestFailed += LogRequestFailed;
     }
 
@@ -31,6 +32,7 @@ public class DebugEventLog : MonoBehaviour
         EventBus.OnSummonCostChanged -= LogSummonCost;
         EventBus.OnWaveStart -= LogWaveStart;
         EventBus.OnMonsterCountChanged -= LogMonsterCount;
+        EventBus.OnCastleHpChanged -= LogCastleHp;
         EventBus.OnRequestFailed -= LogRequestFailed;
     }
 
@@ -58,6 +60,11 @@ public class DebugEventLog : MonoBehaviour
     {
         if (count % MONSTER_COUNT_LOG_STEP == 0)
             Debug.Log($"{LOG_PREFIX} 몬스터 수: {count}");
+    }
+
+    private void LogCastleHp(int hp)
+    {
+        Debug.Log($"{LOG_PREFIX} 본진 체력: {hp}");
     }
 
     private void LogRequestFailed(ErrorCode code)

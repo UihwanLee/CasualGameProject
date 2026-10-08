@@ -14,6 +14,6 @@ public static class Define
     public const int START_GOLD = 100;             // 시작 골드
     public const int SUMMON_BASE_COST = 20;        // 첫 소환 비용
     public const int SUMMON_COST_INCREASE = 2;     // 소환할 때마다 늘어나는 비용
-    public const int MAX_MONSTER_COUNT = 100;      // 필드 몬스터 수가 이 값을 넘으면 패배
+    public const int CASTLE_MAX_HP = 100;          // 본진 최대 체력 (0이 되면 패배)
     public const int MERGE_REQUIRE_COUNT = 3;      // 합성에 필요한 같은 유닛 수
 }

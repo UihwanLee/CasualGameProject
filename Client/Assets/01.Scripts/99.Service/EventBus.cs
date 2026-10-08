@@ -10,6 +10,7 @@ public static class EventBus
     public static Action<int> OnSummonCostChanged;          // 소환 비용 변경 시 발생 (현재 비용)
     public static Action<int> OnWaveStart;                  // 웨이브 시작 시 발생 (웨이브 번호)
     public static Action<int> OnMonsterCountChanged;        // 필드 몬스터 수 변경 시 발생
+    public static Action<int> OnCastleHpChanged;            // 본진 체력 변경 시 발생 (현재 체력)
     public static Action<Monster> OnMonsterKilled;          // 몬스터 처치 시 발생
     public static Action<ErrorCode> OnRequestFailed;        // 소환/합성 요청 실패 시 발생
 }

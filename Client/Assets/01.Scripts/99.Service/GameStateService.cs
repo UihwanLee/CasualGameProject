@@ -6,13 +6,15 @@ using CasualGame.Enum;
 public class GameStateService : IGameStateService, IDisposable
 {
     private readonly IGoldService gold;
+    private readonly ICastleService castle;
     private readonly IWaveService wave;
 
     public GameState State { get; private set; } = GameState.UNDEF;
 
-    public GameStateService(IGoldService gold, IWaveService wave)
+    public GameStateService(IGoldService gold, ICastleService castle, IWaveService wave)
     {
         this.gold = gold;
+        this.castle = castle;
         this.wave = wave;
 
         // 타임 스케일 걸려있을 경우에 풀기
@@ -20,20 +22,21 @@ public class GameStateService : IGameStateService, IDisposable
 
         State = GameState.READY;
 
-        EventBus.OnMonsterCountChanged += CheckGameOver;
+        EventBus.OnCastleHpChanged += CheckGameOver;
     }
 
     public void Dispose()
     {
-        EventBus.OnMonsterCountChanged -= CheckGameOver;
+        EventBus.OnCastleHpChanged -= CheckGameOver;
     }
 
     /// <summary>
-    /// 게임 시작 (골드 초기화 후 첫 웨이브 진행)
+    /// 게임 시작 (골드와 본진 체력 초기화 후 첫 웨이브 진행)
     /// </summary>
     public void StartGame()
     {
         gold.Set(Define.START_GOLD);
+        castle.ResetHp();
         EventBus.OnSummonCostChanged?.Invoke(Define.SUMMON_BASE_COST);
 
         ChangeState(GameState.RUNNING);
@@ -64,11 +67,11 @@ public class GameStateService : IGameStateService, IDisposable
     }
 
     /// <summary>
-    /// 필드 몬스터 수가 한도를 넘으면 패배
+    /// 본진 체력이 0이 되면 패배
     /// </summary>
-    private void CheckGameOver(int monsterCount)
+    private void CheckGameOver(int castleHp)
     {
-        if (State == GameState.RUNNING && monsterCount > Define.MAX_MONSTER_COUNT)
+        if (State == GameState.RUNNING && castleHp <= 0)
             GameOver();
     }
 }

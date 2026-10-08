@@ -13,6 +13,9 @@ public class GameBootstrapper : MonoBehaviour
     [SerializeField] private List<WaveData> waveDataList = new List<WaveData>();
     [SerializeField] private List<SummonRateData> summonRateDataList = new List<SummonRateData>();
 
+    [Header("본진")]
+    [SerializeField] private CastleView castleView;
+
     [Header("몬스터")]
     [SerializeField] private MonsterPath monsterPath;
     [SerializeField] private Monster[] monsterPrefabs;
@@ -54,13 +57,16 @@ public class GameBootstrapper : MonoBehaviour
         GoldService gold = new GoldService();
         ServiceLocator.Bind<IGoldService>(gold);
 
+        CastleService castle = new CastleService(castleView, Define.CASTLE_MAX_HP);
+        ServiceLocator.Bind<ICastleService>(castle);
+
         MonsterSpawnService monsterSpawn = new MonsterSpawnService(dataTable, monsterPool, monsterPath);
         ServiceLocator.Bind<IMonsterSpawnService>(monsterSpawn);
 
         WaveService wave = new WaveService(dataTable, monsterSpawn);
         ServiceLocator.Bind<IWaveService>(wave);
 
-        GameStateService gameState = new GameStateService(gold, wave);
+        GameStateService gameState = new GameStateService(gold, castle, wave);
         ServiceLocator.Bind<IGameStateService>(gameState);
 
         BoardService board = new BoardService(dataTable, unitPool, boardView);
