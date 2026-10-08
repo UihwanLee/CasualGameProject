@@ -25,25 +25,27 @@ Where-Are-You-Looking-At 프로젝트의 번호 방식(`00.` 접두사)을 따�
 |---|---|
 | `00.Common` | Define, Enum, Interface, ObjectPool 등 공용 |
 | `01.Unit` | 아군 유닛 |
-| `02.Summon` | 랜덤 소환, 합성 |
+| `02.Summon` | 랜덤 소환, 합성, 보드 |
 | `03.Projectile` | 투사체 |
 | `05.UI` | UI |
-| `08.Monster` | 몬스터 |
-| `10.Wave` | 웨이브, 스테이지 진행 |
+| `08.Monster` | 몬스터 (생성/반납은 `Service/`) |
+| `10.Wave` | 웨이브, 스테이지 진행 (`Service/`) |
 | `12.Reward` | 보상 |
 | `20.FloatingText` | 데미지 텍스트 |
 | `22.Effect` | 이펙트 제어 |
+| `90.Core` | ServiceLocator, GameBootstrapper (서비스 등록과 진입점) |
 | `91.Sounds` | 사운드 제어 |
 | `92.Network` | HTTP, WebSocket, 패킷 |
 | `94.Save` | 로컬 저장 |
 | `95.GameRule` | 게임 규칙 데이터 |
 | `97.Converter` | 데이터 변환 |
 | `98.Extension` | 확장 메서드 |
-| `99.Manager` | 전역 매니저 (Game, Pool, Data, UI, EventBus) |
+| `99.Service` | 게임 전역 서비스 (GameState, DataTable, Pool, Gold, EventBus) |
 | `Editor` | 에디터 툴 (DataTool) |
 
 ## 규칙
-- 상수는 `Define`, 열거형은 `CasualGame.Enum` 네임스페이스에 `#region`으로 묶어 정의한다.
-- 매니저는 `Instance` 싱글톤 패턴을 사용한다.
-- 시스템 간 통신은 `EventBus`를 사용하고, 구독한 쪽에서 반드시 해제한다.
+- 상수는 `Define`, 열거형은 `CasualGame.Enum` 네임스페이스에 정의한다. `#region`은 사용하지 않고, 상수 묶음은 구분 주석으로 나눈다.
+- 싱글톤을 쓰지 않는다. 로직은 POCO `XxxService` + `IXxxService`로 만들고 `GameBootstrapper`에서 `ServiceLocator`에 등록한다. (상세는 [클라이언트 아키텍처](Design/02_클라이언트_아키텍처.md) 2장)
+- 기능 전용 서비스는 해당 기능 폴더의 `Service/`에, 여러 기능이 함께 쓰는 서비스는 `99.Service`에 둔다.
+- 시스템 간 통신은 `EventBus`를 사용하고, 구독한 쪽에서 반드시 해제한다. (서비스는 `Dispose`, MonoBehaviour는 `OnDisable`/`OnDestroy`)
 - 새 기능 폴더가 필요하면 비어 있는 번호를 사용한다.
