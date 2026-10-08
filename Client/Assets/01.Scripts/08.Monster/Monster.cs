@@ -14,7 +14,6 @@ public class Monster : MonoBehaviour
     public MonsterStat Stat => stat;
     public MonsterCondition Condition => condition;
     public MonsterData Data => data;
-    public string PoolKey => GetPoolKey(data.Id);
 
     private void Awake()
     {
@@ -40,10 +39,5 @@ public class Monster : MonoBehaviour
         stat.InitStat(data);
         condition.InitMonsterCondition(data);
         controller.Init(path);
-    }
-
-    public static string GetPoolKey(int monsterId)
-    {
-        return $"{Define.POOL_KEY_MONSTER}_{monsterId}";
     }
 }

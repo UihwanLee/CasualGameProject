@@ -25,7 +25,14 @@ public class GameBootstrapper : MonoBehaviour
 
     private void Awake()
     {
-        InstallServices();
+        PrefabPool<Monster> monsterPool = new PrefabPool<Monster>(transform);
+        PrefabPool<Unit> unitPool = new PrefabPool<Unit>(transform);
+
+        InstallServices(monsterPool, unitPool);
+
+        // 엔티티의 Awake가 서비스를 Resolve하므로, 프리팹 미리 생성은 모든 서비스를 등록한 뒤에 한다
+        RegisterPrefabs(monsterPool, monsterPrefabs, monsterPoolInitialSize);
+        RegisterPrefabs(unitPool, unitPrefabs, unitPoolInitialSize);
     }
 
     private void OnDestroy()
@@ -36,18 +43,18 @@ public class GameBootstrapper : MonoBehaviour
     /// <summary>
     /// 서비스 생성 및 등록 (생성 순서 = 의존 순서)
     /// </summary>
-    private void InstallServices()
+    private void InstallServices(PrefabPool<Monster> monsterPool, PrefabPool<Unit> unitPool)
     {
         DataTableService dataTable = new DataTableService(unitDataList, monsterDataList, waveDataList, summonRateDataList);
         ServiceLocator.Bind<IDataTableService>(dataTable);
 
-        PoolService pool = new PoolService(transform);
-        ServiceLocator.Bind<IPoolService>(pool);
+        ServiceLocator.Bind<IPrefabPool<Monster>>(monsterPool);
+        ServiceLocator.Bind<IPrefabPool<Unit>>(unitPool);
 
         GoldService gold = new GoldService();
         ServiceLocator.Bind<IGoldService>(gold);
 
-        MonsterSpawnService monsterSpawn = new MonsterSpawnService(dataTable, pool, monsterPath, monsterPrefabs, monsterPoolInitialSize);
+        MonsterSpawnService monsterSpawn = new MonsterSpawnService(dataTable, monsterPool, monsterPath);
         ServiceLocator.Bind<IMonsterSpawnService>(monsterSpawn);
 
         WaveService wave = new WaveService(dataTable, monsterSpawn);
@@ -56,7 +63,7 @@ public class GameBootstrapper : MonoBehaviour
         GameStateService gameState = new GameStateService(gold, wave);
         ServiceLocator.Bind<IGameStateService>(gameState);
 
-        BoardService board = new BoardService(dataTable, pool, boardView, unitPrefabs, unitPoolInitialSize);
+        BoardService board = new BoardService(dataTable, unitPool, boardView);
         ServiceLocator.Bind<IBoardService>(board);
 
         LocalSummonApi summonApi = new LocalSummonApi(board, gold, dataTable);
@@ -64,5 +71,14 @@ public class GameBootstrapper : MonoBehaviour
 
         SummonService summon = new SummonService(summonApi, board, gold, gameState);
         ServiceLocator.Bind<ISummonService>(summon);
+    }
+
+    /// <summary>
+    /// 프리팹 이름을 키로 풀에 등록 (데이터의 Prefab 값과 프리팹 이름이 같아야 한다)
+    /// </summary>
+    private void RegisterPrefabs<T>(PrefabPool<T> pool, T[] prefabs, int initialSize) where T : Component
+    {
+        foreach (T prefab in prefabs)
+            pool.Register(prefab.name, prefab, initialSize);
     }
 }

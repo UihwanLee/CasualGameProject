@@ -2,32 +2,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 유닛을 배치하는 보드 서비스
-// 슬롯 하나에 유닛 하나가 들어가며, 유닛 프리팹은 UnitData.Prefab과 이름이 같아야 한다.
+// 슬롯 하나에 유닛 하나가 들어가며, 유닛 프리팹은 UnitData.Prefab 값을 키로 풀에서 꺼낸다. (등록은 GameBootstrapper)
 // 슬롯 위치는 BoardView에서 받는다.
 public class BoardService : IBoardService
 {
     private readonly IDataTableService dataTable;
-    private readonly IPoolService pool;
+    private readonly IPrefabPool<Unit> pool;
     private readonly BoardView view;
-    private readonly Unit[] unitPrefabs;
-    private readonly int poolInitialSize;
 
     private readonly Unit[] units;
 
     public int SlotCount => units.Length;
 
-    public BoardService(
-        IDataTableService dataTable,
-        IPoolService pool,
-        BoardView view,
-        Unit[] unitPrefabs,
-        int poolInitialSize)
+    public BoardService(IDataTableService dataTable, IPrefabPool<Unit> pool, BoardView view)
     {
         this.dataTable = dataTable;
         this.pool = pool;
         this.view = view;
-        this.unitPrefabs = unitPrefabs;
-        this.poolInitialSize = poolInitialSize;
 
         units = new Unit[view.SlotCount];
     }
@@ -81,17 +72,11 @@ public class BoardService : IBoardService
 
         Remove(slotIndex);
 
-        string key = Unit.GetPoolKey(unitId);
-        if (!pool.HasPool(key))
-            CreatePool(key, data.Prefab);
-
-        GameObject go = pool.GetObject(key);
-        if (go == null)
+        Unit unit = pool.Spawn(data.Prefab);
+        if (unit == null)
             return null;
 
-        go.transform.position = view.GetSlotPosition(slotIndex);
-
-        Unit unit = go.GetComponent<Unit>();
+        unit.transform.position = view.GetSlotPosition(slotIndex);
         unit.Init(data, slotIndex);
         units[slotIndex] = unit;
 
@@ -107,21 +92,7 @@ public class BoardService : IBoardService
         if (unit == null)
             return;
 
-        pool.ReleaseObject(unit.PoolKey, unit.gameObject);
+        pool.Despawn(unit);
         units[slotIndex] = null;
-    }
-
-    private void CreatePool(string key, string prefabName)
-    {
-        foreach (Unit prefab in unitPrefabs)
-        {
-            if (prefab.name == prefabName)
-            {
-                pool.CreatePool(key, prefab.gameObject, poolInitialSize);
-                return;
-            }
-        }
-
-        Debug.LogError($"유닛 프리팹이 없습니다. prefab={prefabName}");
     }
 }

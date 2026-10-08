@@ -13,7 +13,6 @@ public class Unit : MonoBehaviour
     public UnitStat Stat => stat;
     public UnitData Data => data;
     public int SlotIndex { get; private set; }
-    public string PoolKey => GetPoolKey(data.Id);
 
     private void Awake()
     {
@@ -36,10 +35,5 @@ public class Unit : MonoBehaviour
 
         stat.InitStat(data);
         controller.Init();
-    }
-
-    public static string GetPoolKey(int unitId)
-    {
-        return $"{Define.POOL_KEY_UNIT}_{unitId}";
     }
 }
