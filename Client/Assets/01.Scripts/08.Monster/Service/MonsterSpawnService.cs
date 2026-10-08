@@ -1,33 +1,33 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 몬스터 생성/반납과 필드 위 몬스터 목록을 관리하는 매니저 (씬마다 하나)
+// 몬스터 생성/반납과 필드 위 몬스터 목록을 관리하는 서비스
 // 몬스터 프리팹은 이름으로 찾으며, MonsterData.Prefab과 프리팹 이름이 같아야 한다.
-public class SpawnManager : MonoBehaviour
+public class MonsterSpawnService : IMonsterSpawnService
 {
-    public static SpawnManager Instance { get; private set; }
-
-    [Header("몬스터 경로")]
-    [SerializeField] private MonsterPath path;
-
-    [Header("몬스터 프리팹")]
-    [SerializeField] private Monster[] monsterPrefabs;
-    [SerializeField] private int poolInitialSize = 20;
+    private readonly IDataTableService dataTable;
+    private readonly IPoolService pool;
+    private readonly MonsterPath path;
+    private readonly Monster[] monsterPrefabs;
+    private readonly int poolInitialSize;
 
     private readonly List<Monster> activeMonsters = new List<Monster>();
 
     public IReadOnlyList<Monster> ActiveMonsters => activeMonsters;
     public int MonsterCount => activeMonsters.Count;
 
-    private void Awake()
+    public MonsterSpawnService(
+        IDataTableService dataTable,
+        IPoolService pool,
+        MonsterPath path,
+        Monster[] monsterPrefabs,
+        int poolInitialSize)
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
+        this.dataTable = dataTable;
+        this.pool = pool;
+        this.path = path;
+        this.monsterPrefabs = monsterPrefabs;
+        this.poolInitialSize = poolInitialSize;
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public class SpawnManager : MonoBehaviour
     /// <param name="monsterId">몬스터 ID</param>
     public Monster Spawn(int monsterId)
     {
-        MonsterData data = DataManager.GetMonster(monsterId);
+        MonsterData data = dataTable.GetMonster(monsterId);
         if (data == null)
         {
             Debug.LogError($"MonsterData가 없습니다. id={monsterId}");
@@ -44,10 +44,10 @@ public class SpawnManager : MonoBehaviour
         }
 
         string key = Monster.GetPoolKey(monsterId);
-        if (!PoolManager.Instance.HasPool(key))
+        if (!pool.HasPool(key))
             CreatePool(key, data.Prefab);
 
-        GameObject go = PoolManager.Instance.GetObject(key);
+        GameObject go = pool.GetObject(key);
         if (go == null)
             return null;
 
@@ -68,7 +68,7 @@ public class SpawnManager : MonoBehaviour
         if (!activeMonsters.Remove(monster))
             return;
 
-        PoolManager.Instance.ReleaseObject(monster.PoolKey, monster.gameObject);
+        pool.ReleaseObject(monster.PoolKey, monster.gameObject);
         EventBus.OnMonsterCountChanged?.Invoke(activeMonsters.Count);
     }
 
@@ -80,7 +80,7 @@ public class SpawnManager : MonoBehaviour
         for (int i = activeMonsters.Count - 1; i >= 0; i--)
         {
             Monster monster = activeMonsters[i];
-            PoolManager.Instance.ReleaseObject(monster.PoolKey, monster.gameObject);
+            pool.ReleaseObject(monster.PoolKey, monster.gameObject);
         }
 
         activeMonsters.Clear();
@@ -93,7 +93,7 @@ public class SpawnManager : MonoBehaviour
         {
             if (prefab.name == prefabName)
             {
-                PoolManager.Instance.CreatePool(key, prefab.gameObject, poolInitialSize);
+                pool.CreatePool(key, prefab.gameObject, poolInitialSize);
                 return;
             }
         }

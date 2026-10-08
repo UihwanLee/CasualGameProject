@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using CasualGame.Enum;
 
@@ -9,6 +10,8 @@ public class UnitController : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
 
     private Unit unit;
+    private IGameStateService gameState;
+    private IMonsterSpawnService monsterSpawn;
     private Monster target;
     private float attackTimer;
 
@@ -17,6 +20,8 @@ public class UnitController : MonoBehaviour
     private void Awake()
     {
         unit = GetComponent<Unit>();
+        gameState = ServiceLocator.Resolve<IGameStateService>();
+        monsterSpawn = ServiceLocator.Resolve<IMonsterSpawnService>();
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
@@ -30,7 +35,7 @@ public class UnitController : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.State != GameState.RUNNING)
+        if (gameState.State != GameState.RUNNING)
             return;
 
         attackTimer -= Time.deltaTime;
@@ -78,8 +83,11 @@ public class UnitController : MonoBehaviour
         float range = unit.Stat.Range.Value;
         float rangeSqr = range * range;
 
-        foreach (Monster monster in SpawnManager.Instance.ActiveMonsters)
+        // 인터페이스 리스트를 foreach로 돌면 열거자 박싱이 생기므로 인덱스로 순회한다
+        IReadOnlyList<Monster> monsters = monsterSpawn.ActiveMonsters;
+        for (int i = 0; i < monsters.Count; i++)
         {
+            Monster monster = monsters[i];
             if (monster.Condition.IsDead)
                 continue;
 

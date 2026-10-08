@@ -13,12 +13,16 @@ public class Board : MonoBehaviour
     [SerializeField] private int poolInitialSize = 5;
 
     private Unit[] units;
+    private IDataTableService dataTable;
+    private IPoolService pool;
 
     public int SlotCount => slots.Length;
 
     private void Awake()
     {
         units = new Unit[slots.Length];
+        dataTable = ServiceLocator.Resolve<IDataTableService>();
+        pool = ServiceLocator.Resolve<IPoolService>();
     }
 
     public Unit GetUnit(int slotIndex)
@@ -61,7 +65,7 @@ public class Board : MonoBehaviour
     /// </summary>
     public Unit Place(int slotIndex, int unitId)
     {
-        UnitData data = DataManager.GetUnit(unitId);
+        UnitData data = dataTable.GetUnit(unitId);
         if (data == null)
         {
             Debug.LogError($"UnitData가 없습니다. id={unitId}");
@@ -71,10 +75,10 @@ public class Board : MonoBehaviour
         Remove(slotIndex);
 
         string key = Unit.GetPoolKey(unitId);
-        if (!PoolManager.Instance.HasPool(key))
+        if (!pool.HasPool(key))
             CreatePool(key, data.Prefab);
 
-        GameObject go = PoolManager.Instance.GetObject(key);
+        GameObject go = pool.GetObject(key);
         if (go == null)
             return null;
 
@@ -96,7 +100,7 @@ public class Board : MonoBehaviour
         if (unit == null)
             return;
 
-        PoolManager.Instance.ReleaseObject(unit.PoolKey, unit.gameObject);
+        pool.ReleaseObject(unit.PoolKey, unit.gameObject);
         units[slotIndex] = null;
     }
 
@@ -106,7 +110,7 @@ public class Board : MonoBehaviour
         {
             if (prefab.name == prefabName)
             {
-                PoolManager.Instance.CreatePool(key, prefab.gameObject, poolInitialSize);
+                pool.CreatePool(key, prefab.gameObject, poolInitialSize);
                 return;
             }
         }

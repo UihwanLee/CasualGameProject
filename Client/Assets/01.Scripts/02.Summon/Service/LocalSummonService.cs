@@ -9,11 +9,15 @@ using CasualGame.Enum;
 public class LocalSummonService : ISummonService
 {
     private readonly Board board;
+    private readonly IGoldService gold;
+    private readonly IDataTableService dataTable;
     private int summonCount;
 
-    public LocalSummonService(Board board)
+    public LocalSummonService(Board board, IGoldService gold, IDataTableService dataTable)
     {
         this.board = board;
+        this.gold = gold;
+        this.dataTable = dataTable;
     }
 
     public int CurrentCost => Define.SUMMON_BASE_COST + Define.SUMMON_COST_INCREASE * summonCount;
@@ -21,14 +25,14 @@ public class LocalSummonService : ISummonService
     public UniTask<SummonResult> SummonAsync(CancellationToken token)
     {
         int cost = CurrentCost;
-        int gold = GoldManager.Instance.Gold;
+        int currentGold = gold.Gold;
 
-        if (gold < cost)
-            return UniTask.FromResult(new SummonResult { Code = ErrorCode.NotEnoughGold, Gold = gold, NextCost = cost });
+        if (currentGold < cost)
+            return UniTask.FromResult(new SummonResult { Code = ErrorCode.NotEnoughGold, Gold = currentGold, NextCost = cost });
 
         int slotIndex = board.FindEmptySlot();
         if (slotIndex < 0)
-            return UniTask.FromResult(new SummonResult { Code = ErrorCode.BoardFull, Gold = gold, NextCost = cost });
+            return UniTask.FromResult(new SummonResult { Code = ErrorCode.BoardFull, Gold = currentGold, NextCost = cost });
 
         summonCount++;
 
@@ -37,7 +41,7 @@ public class LocalSummonService : ISummonService
             Code = ErrorCode.Ok,
             UnitId = PickUnit(RollTier()).Id,
             SlotIndex = slotIndex,
-            Gold = gold - cost,
+            Gold = currentGold - cost,
             NextCost = CurrentCost,
         });
     }
@@ -52,7 +56,7 @@ public class LocalSummonService : ISummonService
 
         // 다음 등급 유닛이 없으면 합성 불가
         Tier nextTier = selected.Data.Tier + 1;
-        if (!DataManager.UnitTierDict.ContainsKey(nextTier))
+        if (!dataTable.UnitTierDict.ContainsKey(nextTier))
             return UniTask.FromResult(fail);
 
         List<int> sameSlots = board.FindSlotsWithUnit(selected.Data.Id);
@@ -81,16 +85,16 @@ public class LocalSummonService : ISummonService
     private Tier RollTier()
     {
         float total = 0f;
-        foreach (SummonRateData rate in DataManager.SummonRateList)
+        foreach (SummonRateData rate in dataTable.SummonRateList)
         {
-            if (DataManager.UnitTierDict.ContainsKey(rate.Tier))
+            if (dataTable.UnitTierDict.ContainsKey(rate.Tier))
                 total += rate.Rate;
         }
 
         float roll = Random.Range(0f, total);
-        foreach (SummonRateData rate in DataManager.SummonRateList)
+        foreach (SummonRateData rate in dataTable.SummonRateList)
         {
-            if (!DataManager.UnitTierDict.ContainsKey(rate.Tier))
+            if (!dataTable.UnitTierDict.ContainsKey(rate.Tier))
                 continue;
 
             roll -= rate.Rate;
@@ -106,7 +110,7 @@ public class LocalSummonService : ISummonService
     /// </summary>
     private UnitData PickUnit(Tier tier)
     {
-        List<UnitData> list = DataManager.UnitTierDict[tier];
+        List<UnitData> list = dataTable.UnitTierDict[tier];
         return list[Random.Range(0, list.Count)];
     }
 }

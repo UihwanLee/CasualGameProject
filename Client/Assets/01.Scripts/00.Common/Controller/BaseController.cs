@@ -19,6 +19,8 @@ public class BaseController : MonoBehaviour
     // 슬로우를 건 대상별 감소 비율
     protected Dictionary<object, float> slowSources = new Dictionary<object, float>();
 
+    protected IGameStateService gameState;
+
     public Vector2 MoveDirection => moveDirection;
     public float BaseSpeed => baseSpeed;
     public float CurrentSpeed => currentSpeed;
@@ -32,6 +34,8 @@ public class BaseController : MonoBehaviour
     {
         if (spriteRenderer == null)
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        gameState = ServiceLocator.Resolve<IGameStateService>();
     }
 
     protected virtual void OnEnable()
@@ -46,7 +50,7 @@ public class BaseController : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.State != GameState.RUNNING)
+        if (gameState.State != GameState.RUNNING)
             return;
 
         Move();

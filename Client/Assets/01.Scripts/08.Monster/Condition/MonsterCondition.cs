@@ -4,10 +4,12 @@ using UnityEngine;
 public class MonsterCondition : BaseCondition
 {
     protected Monster monster;
+    protected IMonsterSpawnService monsterSpawn;
 
     protected virtual void Awake()
     {
         monster = GetComponent<Monster>();
+        monsterSpawn = ServiceLocator.Resolve<IMonsterSpawnService>();
     }
 
     public void InitMonsterCondition(MonsterData data)
@@ -24,6 +26,6 @@ public class MonsterCondition : BaseCondition
 
         EventBus.OnMonsterKilled?.Invoke(monster);
 
-        SpawnManager.Instance.Despawn(monster);
+        monsterSpawn.Despawn(monster);
     }
 }

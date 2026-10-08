@@ -1,38 +1,29 @@
+using System;
 using UnityEngine;
 using CasualGame.Enum;
 
-// 게임 전체 상태를 관리하는 전역 매니저
-public class GameManager : MonoBehaviour
+// 게임 전체 상태를 관리하는 서비스
+public class GameStateService : IGameStateService, IDisposable
 {
-    public static GameManager Instance { get; set; }
+    private readonly IGoldService gold;
+    private readonly IWaveService wave;
 
     public GameState State { get; private set; } = GameState.UNDEF;
 
-    private void Awake()
+    public GameStateService(IGoldService gold, IWaveService wave)
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        this.gold = gold;
+        this.wave = wave;
 
         // 타임 스케일 걸려있을 경우에 풀기
         Time.timeScale = 1f;
 
         State = GameState.READY;
-    }
 
-    private void OnEnable()
-    {
         EventBus.OnMonsterCountChanged += CheckGameOver;
     }
 
-    private void OnDisable()
+    public void Dispose()
     {
         EventBus.OnMonsterCountChanged -= CheckGameOver;
     }
@@ -42,11 +33,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void StartGame()
     {
-        GoldManager.Instance.Set(Define.START_GOLD);
+        gold.Set(Define.START_GOLD);
         EventBus.OnSummonCostChanged?.Invoke(Define.SUMMON_BASE_COST);
 
         ChangeState(GameState.RUNNING);
-        WaveManager.Instance.StartWave();
+        wave.StartWave();
     }
 
     /// <summary>
@@ -56,17 +47,8 @@ public class GameManager : MonoBehaviour
     {
         if (State == GameState.GAMEOVER) return;
 
-        WaveManager.Instance.StopWave();
+        wave.StopWave();
         ChangeState(GameState.GAMEOVER);
-    }
-
-    /// <summary>
-    /// 필드 몬스터 수가 한도를 넘으면 패배
-    /// </summary>
-    private void CheckGameOver(int monsterCount)
-    {
-        if (State == GameState.RUNNING && monsterCount > Define.MAX_MONSTER_COUNT)
-            GameOver();
     }
 
     /// <summary>
@@ -79,5 +61,14 @@ public class GameManager : MonoBehaviour
 
         State = state;
         EventBus.OnGameStateChanged?.Invoke(state);
+    }
+
+    /// <summary>
+    /// 필드 몬스터 수가 한도를 넘으면 패배
+    /// </summary>
+    private void CheckGameOver(int monsterCount)
+    {
+        if (State == GameState.RUNNING && monsterCount > Define.MAX_MONSTER_COUNT)
+            GameOver();
     }
 }

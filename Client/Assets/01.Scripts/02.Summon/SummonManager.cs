@@ -12,6 +12,8 @@ public class SummonManager : MonoBehaviour
     [SerializeField] private Board board;
 
     private ISummonService service;
+    private IGameStateService gameState;
+    private IGoldService gold;
     private bool isRequesting;
 
     public bool IsRequesting => isRequesting;
@@ -25,7 +27,9 @@ public class SummonManager : MonoBehaviour
         }
 
         Instance = this;
-        service = new LocalSummonService(board);
+        gameState = ServiceLocator.Resolve<IGameStateService>();
+        gold = ServiceLocator.Resolve<IGoldService>();
+        service = new LocalSummonService(board, gold, ServiceLocator.Resolve<IDataTableService>());
     }
 
     /// <summary>
@@ -53,7 +57,7 @@ public class SummonManager : MonoBehaviour
 
     private bool CanRequest()
     {
-        return !isRequesting && GameManager.Instance.State == GameState.RUNNING;
+        return !isRequesting && gameState.State == GameState.RUNNING;
     }
 
     private async UniTaskVoid SummonAsync(CancellationToken token)
@@ -69,7 +73,7 @@ public class SummonManager : MonoBehaviour
                 return;
             }
 
-            GoldManager.Instance.Set(result.Gold);
+            gold.Set(result.Gold);
             EventBus.OnSummonCostChanged?.Invoke(result.NextCost);
             board.Place(result.SlotIndex, result.UnitId);
         }

@@ -1,29 +1,25 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 
-// 웨이브 진행 매니저 (씬마다 하나)
+// 웨이브 진행 서비스
 // 웨이브마다 정해진 수만큼 몬스터를 스폰하고, 제한 시간이 지나면 다음 웨이브로 넘어간다.
-public class WaveManager : MonoBehaviour
+public class WaveService : IWaveService, IDisposable
 {
-    public static WaveManager Instance { get; private set; }
+    private readonly IDataTableService dataTable;
+    private readonly IMonsterSpawnService monsterSpawn;
 
     private CancellationTokenSource cts;
 
     public int CurrentWave { get; private set; }
 
-    private void Awake()
+    public WaveService(IDataTableService dataTable, IMonsterSpawnService monsterSpawn)
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Instance = this;
+        this.dataTable = dataTable;
+        this.monsterSpawn = monsterSpawn;
     }
 
-    private void OnDestroy()
+    public void Dispose()
     {
         StopWave();
     }
@@ -35,7 +31,7 @@ public class WaveManager : MonoBehaviour
     {
         StopWave();
 
-        cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        cts = new CancellationTokenSource();
         RunWavesAsync(cts.Token).Forget();
     }
 
@@ -51,7 +47,7 @@ public class WaveManager : MonoBehaviour
 
     private async UniTaskVoid RunWavesAsync(CancellationToken token)
     {
-        foreach (WaveData wave in DataManager.WaveList)
+        foreach (WaveData wave in dataTable.WaveList)
         {
             CurrentWave = wave.Id;
             EventBus.OnWaveStart?.Invoke(wave.Id);
@@ -59,7 +55,7 @@ public class WaveManager : MonoBehaviour
             // 스폰과 제한 시간은 동시에 흐른다
             await UniTask.WhenAll(
                 SpawnWaveAsync(wave, token),
-                UniTask.Delay(System.TimeSpan.FromSeconds(wave.TimeLimit), cancellationToken: token));
+                UniTask.Delay(TimeSpan.FromSeconds(wave.TimeLimit), cancellationToken: token));
         }
 
         // TODO: 마지막 웨이브 이후 처리 (클리어 / 무한 웨이브)
@@ -69,10 +65,10 @@ public class WaveManager : MonoBehaviour
     {
         for (int i = 0; i < wave.Count; i++)
         {
-            SpawnManager.Instance.Spawn(wave.MonsterId);
+            monsterSpawn.Spawn(wave.MonsterId);
 
             if (wave.SpawnInterval > 0f)
-                await UniTask.Delay(System.TimeSpan.FromSeconds(wave.SpawnInterval), cancellationToken: token);
+                await UniTask.Delay(TimeSpan.FromSeconds(wave.SpawnInterval), cancellationToken: token);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // 게임 씬의 진입점
@@ -6,6 +7,17 @@ using UnityEngine;
 [DefaultExecutionOrder(-1000)]
 public class GameBootstrapper : MonoBehaviour
 {
+    [Header("임시 데이터 (시트 연동 전)")]
+    [SerializeField] private List<UnitData> unitDataList = new List<UnitData>();
+    [SerializeField] private List<MonsterData> monsterDataList = new List<MonsterData>();
+    [SerializeField] private List<WaveData> waveDataList = new List<WaveData>();
+    [SerializeField] private List<SummonRateData> summonRateDataList = new List<SummonRateData>();
+
+    [Header("몬스터")]
+    [SerializeField] private MonsterPath monsterPath;
+    [SerializeField] private Monster[] monsterPrefabs;
+    [SerializeField] private int monsterPoolInitialSize = 20;
+
     private void Awake()
     {
         InstallServices();
@@ -21,6 +33,24 @@ public class GameBootstrapper : MonoBehaviour
     /// </summary>
     private void InstallServices()
     {
-        // 등록 순서: DataTable → Pool → Gold → MonsterSpawn → Wave → GameState → Board → SummonApi → Summon
+        DataTableService dataTable = new DataTableService(unitDataList, monsterDataList, waveDataList, summonRateDataList);
+        ServiceLocator.Bind<IDataTableService>(dataTable);
+
+        PoolService pool = new PoolService(transform);
+        ServiceLocator.Bind<IPoolService>(pool);
+
+        GoldService gold = new GoldService();
+        ServiceLocator.Bind<IGoldService>(gold);
+
+        MonsterSpawnService monsterSpawn = new MonsterSpawnService(dataTable, pool, monsterPath, monsterPrefabs, monsterPoolInitialSize);
+        ServiceLocator.Bind<IMonsterSpawnService>(monsterSpawn);
+
+        WaveService wave = new WaveService(dataTable, monsterSpawn);
+        ServiceLocator.Bind<IWaveService>(wave);
+
+        GameStateService gameState = new GameStateService(gold, wave);
+        ServiceLocator.Bind<IGameStateService>(gameState);
+
+        // TODO: Board → SummonApi → Summon (4단계)
     }
 }

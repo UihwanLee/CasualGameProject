@@ -1,48 +1,18 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
-// ObjectPool을 모아놓은 전역 PoolManager 스크립트
+// ObjectPool을 모아놓은 PoolService
 // ObjectPool Dictionary 자료구조로 관리
-// MonoBehaivor 상속하고 있기 때문에 빈 오브젝트에서 컴포넌트 붙이고 사용해야함
-public class PoolManager : MonoBehaviour
+// 풀 오브젝트는 생성자로 받은 root 아래에 키별 부모를 만들어 모아둔다.
+public class PoolService : IPoolService
 {
-    [Header("씬 로드 시 파괴하지 않은 Key 리스트")]
-    [SerializeField] string[] excludeKeys;
+    private readonly Transform root;
+    private readonly Dictionary<string, ObjectPool> objectPools = new Dictionary<string, ObjectPool>();
 
-    private static PoolManager instance;
-
-    private Dictionary<string, ObjectPool> objectPools = new Dictionary<string, ObjectPool>();
-
-    public static PoolManager Instance { get; set; }
-
-    private void OnEnable()
+    public PoolService(Transform root)
     {
-        // 씬 로드 이벤트 구독
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        this.root = root;
     }
-
-    private void OnDisable()
-    {
-        // 이벤트 구독 해제 
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(Instance);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    private PoolManager() { }
 
     /// <summary>
     /// ObjectPool 생성
@@ -63,7 +33,7 @@ public class PoolManager : MonoBehaviour
         if (newParent == null)
         {
             GameObject poolParent = new GameObject($"Pool_{key}");
-            poolParent.transform.SetParent(this.transform);
+            poolParent.transform.SetParent(root);
             newParent = poolParent.transform;
         }
 
@@ -86,6 +56,17 @@ public class PoolManager : MonoBehaviour
 
         Debug.Log($"해당 {key}값을 가지고 있는 ObjectPool이 존재하지 않습니다");
         return null;
+    }
+
+    public bool TryGetObject(string key, out GameObject obj)
+    {
+        obj = null;
+
+        if (objectPools.TryGetValue(key, out ObjectPool pool))
+            return pool.TryGet(out obj);
+
+        Debug.Log($"해당 {key}값을 가지고 있는 ObjectPool이 존재하지 않습니다");
+        return false;
     }
 
     /// <summary>
@@ -130,49 +111,11 @@ public class PoolManager : MonoBehaviour
         return objectPools.ContainsKey(key);
     }
 
-    public bool TryGetObject(string key, out GameObject obj)
-    {
-        obj = null;
-
-        if (objectPools.TryGetValue(key, out ObjectPool pool))
-            return pool.TryGet(out obj);
-
-        Debug.Log($"해당 {key}값을 가지고 있는 ObjectPool이 존재하지 않습니다");
-        return false;
-    }
-
     public int GetAvailableCount(string key)
     {
         if (objectPools.TryGetValue(key, out ObjectPool pool))
             return pool.AvailableCount;
 
         return 0;
-    }
-
-    public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // 필요한 키 빼고 모두 삭제
-        ClearAllPoolOnLoadedWithOutArray(excludeKeys);
-    }
-
-    private void ClearAllPoolOnLoadedWithOutArray(string[] outKeys)
-    {
-        // string[]에 포함된 key값만 빼고 모두 삭제
-        List<string> keysToRemove = objectPools.Keys
-            .Where(key => !outKeys.Contains(key))
-            .ToList();
-
-        // Pool 정리
-        foreach (string key in keysToRemove)
-        {
-            if (objectPools.ContainsKey(key))
-            {
-                // ClearPool 호출
-                objectPools[key].ClearPool();
-
-                // 딕셔너리에서 제거
-                objectPools.Remove(key);
-            }
-        }
     }
 }
