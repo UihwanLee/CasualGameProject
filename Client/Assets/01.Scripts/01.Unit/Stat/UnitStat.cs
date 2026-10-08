@@ -67,8 +67,6 @@ public class UnitStat : MonoBehaviour
         }
     }
 
-    #region 프로퍼티
-
     public int ID { get { return id; } }
     public Attribute Attack { get { return attack; } }
     public Attribute AttackSpeed { get { return attackSpeed; } }
@@ -76,6 +74,4 @@ public class UnitStat : MonoBehaviour
 
     // 공격 한 번에 걸리는 시간(초)
     public float AttackInterval { get { return 1f / attackSpeed.Value; } }
-
-    #endregion
 }

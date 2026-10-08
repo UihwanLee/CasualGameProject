@@ -33,11 +33,7 @@ public class Attribute
         this.value = amount;
     }
 
-    #region 프로퍼티
-
     public int LocalIndex { get { return localIndex; } }
     public float Value { get { return value; } }
     public float MinValue { get { return minValue; } }
-
-    #endregion
 }

@@ -12,13 +12,11 @@ public class StatAttribute : Attribute
     [SerializeField] private float fixedValue;
     [SerializeField] private bool isFixed = false;
 
-    #region 프로퍼티
     public float FixedValue => fixedValue;
     public bool IsFixed => isFixed;
     public float BaseValue => baseValue;
     public float Additive => additive;
     public float Multiplier => multiplier;
-    #endregion
 
     public StatAttribute(int localIndex, float baseValue, float minValue)
         : base(localIndex, baseValue, minValue)

@@ -149,7 +149,6 @@ public class PoolManager : MonoBehaviour
         return 0;
     }
 
-    #region Scene 로드 시 Pool 초기화
     public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // 필요한 키 빼고 모두 삭제
@@ -176,5 +175,4 @@ public class PoolManager : MonoBehaviour
             }
         }
     }
-    #endregion
 }

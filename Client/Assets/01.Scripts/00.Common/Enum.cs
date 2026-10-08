@@ -1,12 +1,10 @@
 // 게임 프로젝트에서 사용할 Enum 타입에 접근할 수 있는 Enum Namespace
-// Enum Type을 정의 할 때 region/endregion을 활용하여 사용한다.
+// Enum Type은 summary 주석으로 용도를 적고 정의한다.
 namespace CasualGame.Enum
 {
     /// <summary>
     /// GameState
     /// </summary>
-    #region GameState
-
     public enum GameState
     {
         READY,
@@ -16,13 +14,9 @@ namespace CasualGame.Enum
         UNDEF,
     }
 
-    #endregion
-
     /// <summary>
     /// 유닛 등급
     /// </summary>
-    #region Tier
-
     public enum Tier
     {
         COMMON,
@@ -32,13 +26,9 @@ namespace CasualGame.Enum
         MYTHIC,
     }
 
-    #endregion
-
     /// <summary>
     /// Attribute 종류
     /// </summary>
-    #region AttributeType
-
     public enum AttributeType
     {
         // Condition
@@ -54,13 +44,9 @@ namespace CasualGame.Enum
         MoveSpeed,
     }
 
-    #endregion
-
     /// <summary>
     /// 요청 결과 코드
     /// </summary>
-    #region ErrorCode
-
     public enum ErrorCode
     {
         Ok = 0,
@@ -71,6 +57,4 @@ namespace CasualGame.Enum
         SessionExpired = 3001,
         ServerError = 9000,
     }
-
-    #endregion
 }

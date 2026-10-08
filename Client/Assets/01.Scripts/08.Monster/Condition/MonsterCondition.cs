@@ -5,25 +5,15 @@ public class MonsterCondition : BaseCondition
 {
     protected Monster monster;
 
-    #region LifeCycle
-
     protected virtual void Awake()
     {
         monster = GetComponent<Monster>();
     }
 
-    #endregion
-
-    #region 초기화
-
     public void InitMonsterCondition(MonsterData data)
     {
         InitCondition(data.Hp);
     }
-
-    #endregion
-
-    #region 사망 처리
 
     protected override void Die()
     {
@@ -36,6 +26,4 @@ public class MonsterCondition : BaseCondition
 
         SpawnManager.Instance.Despawn(monster);
     }
-
-    #endregion
 }

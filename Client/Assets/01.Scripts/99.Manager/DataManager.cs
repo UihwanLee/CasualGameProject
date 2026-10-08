@@ -16,13 +16,11 @@ public class DataManager : MonoBehaviour
     [SerializeField] private List<WaveData> waveDataList = new List<WaveData>();
     [SerializeField] private List<SummonRateData> summonRateDataList = new List<SummonRateData>();
 
-    #region 데이터
     public static Dictionary<int, UnitData> UnitDict { get; private set; }
     public static Dictionary<int, MonsterData> MonsterDict { get; private set; }
     public static Dictionary<Tier, List<UnitData>> UnitTierDict { get; private set; }
     public static List<WaveData> WaveList { get; private set; }
     public static List<SummonRateData> SummonRateList { get; private set; }
-    #endregion
 
     private void Awake()
     {

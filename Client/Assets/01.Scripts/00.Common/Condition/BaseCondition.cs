@@ -85,8 +85,6 @@ public class BaseCondition : MonoBehaviour, IDamageable
         IsDead = true;
     }
 
-    #region 프로퍼티
     public Attribute MaxHp => maxHp;
     public Attribute Hp => hp;
-    #endregion
 }

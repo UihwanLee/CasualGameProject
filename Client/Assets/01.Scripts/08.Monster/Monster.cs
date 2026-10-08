@@ -10,13 +10,11 @@ public class Monster : MonoBehaviour
 
     private MonsterData data;
 
-    #region 프로퍼티
     public MonsterController Controller => controller;
     public MonsterStat Stat => stat;
     public MonsterCondition Condition => condition;
     public MonsterData Data => data;
     public string PoolKey => GetPoolKey(data.Id);
-    #endregion
 
     private void Awake()
     {

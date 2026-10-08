@@ -21,8 +21,6 @@ public class Board : MonoBehaviour
         units = new Unit[slots.Length];
     }
 
-    #region 조회
-
     public Unit GetUnit(int slotIndex)
     {
         return units[slotIndex];
@@ -57,10 +55,6 @@ public class Board : MonoBehaviour
 
         return result;
     }
-
-    #endregion
-
-    #region 배치/제거
 
     /// <summary>
     /// 슬롯에 유닛 배치
@@ -105,8 +99,6 @@ public class Board : MonoBehaviour
         PoolManager.Instance.ReleaseObject(unit.PoolKey, unit.gameObject);
         units[slotIndex] = null;
     }
-
-    #endregion
 
     private void CreatePool(string key, string prefabName)
     {

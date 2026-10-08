@@ -62,10 +62,6 @@ public class MonsterStat : MonoBehaviour
         }
     }
 
-    #region 프로퍼티
-
     public int ID { get { return id; } }
     public Attribute MoveSpeed { get { return moveSpeed; } }
-
-    #endregion
 }

@@ -9,13 +9,11 @@ public class Unit : MonoBehaviour
 
     private UnitData data;
 
-    #region 프로퍼티
     public UnitController Controller => controller;
     public UnitStat Stat => stat;
     public UnitData Data => data;
     public int SlotIndex { get; private set; }
     public string PoolKey => GetPoolKey(data.Id);
-    #endregion
 
     private void Awake()
     {

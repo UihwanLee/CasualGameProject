@@ -19,11 +19,9 @@ public class BaseController : MonoBehaviour
     // 슬로우를 건 대상별 감소 비율
     protected Dictionary<object, float> slowSources = new Dictionary<object, float>();
 
-    #region 프로퍼티
     public Vector2 MoveDirection => moveDirection;
     public float BaseSpeed => baseSpeed;
     public float CurrentSpeed => currentSpeed;
-    #endregion
 
     protected virtual void Reset()
     {
