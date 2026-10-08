@@ -5,15 +5,15 @@ using UnityEngine;
 using CasualGame.Enum;
 
 // 클라이언트 안에서 소환/합성 결과를 결정하는 구현체
-// 보드와 골드를 읽어서 결과만 만들고, 실제 반영은 SummonManager가 한다.
-public class LocalSummonService : ISummonService
+// 보드와 골드를 읽어서 결과만 만들고, 실제 반영은 SummonService가 한다.
+public class LocalSummonApi : ISummonApi
 {
-    private readonly Board board;
+    private readonly IBoardService board;
     private readonly IGoldService gold;
     private readonly IDataTableService dataTable;
     private int summonCount;
 
-    public LocalSummonService(Board board, IGoldService gold, IDataTableService dataTable)
+    public LocalSummonApi(IBoardService board, IGoldService gold, IDataTableService dataTable)
     {
         this.board = board;
         this.gold = gold;
@@ -84,16 +84,21 @@ public class LocalSummonService : ISummonService
     /// </summary>
     private Tier RollTier()
     {
+        // 인터페이스 리스트를 foreach로 돌면 열거자 박싱이 생기므로 인덱스로 순회한다
+        IReadOnlyList<SummonRateData> rates = dataTable.SummonRateList;
+
         float total = 0f;
-        foreach (SummonRateData rate in dataTable.SummonRateList)
+        for (int i = 0; i < rates.Count; i++)
         {
+            SummonRateData rate = rates[i];
             if (dataTable.UnitTierDict.ContainsKey(rate.Tier))
                 total += rate.Rate;
         }
 
         float roll = Random.Range(0f, total);
-        foreach (SummonRateData rate in dataTable.SummonRateList)
+        for (int i = 0; i < rates.Count; i++)
         {
+            SummonRateData rate = rates[i];
             if (!dataTable.UnitTierDict.ContainsKey(rate.Tier))
                 continue;
 

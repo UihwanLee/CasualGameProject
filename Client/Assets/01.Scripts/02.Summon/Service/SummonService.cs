@@ -1,35 +1,34 @@
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using CasualGame.Enum;
 
-// 소환/합성 요청을 보내고 결과를 보드와 골드에 반영하는 매니저 (씬마다 하나)
-// 응답을 기다리는 동안에는 다음 요청을 받지 않는다.
-public class SummonManager : MonoBehaviour
+// 소환/합성 요청을 보내고 결과를 보드와 골드에 반영하는 서비스
+// 결과는 ISummonApi가 결정하고, 응답을 기다리는 동안에는 다음 요청을 받지 않는다.
+public class SummonService : ISummonService, IDisposable
 {
-    public static SummonManager Instance { get; private set; }
+    private readonly ISummonApi api;
+    private readonly IBoardService board;
+    private readonly IGoldService gold;
+    private readonly IGameStateService gameState;
 
-    [SerializeField] private Board board;
-
-    private ISummonService service;
-    private IGameStateService gameState;
-    private IGoldService gold;
+    private readonly CancellationTokenSource cts = new CancellationTokenSource();
     private bool isRequesting;
 
     public bool IsRequesting => isRequesting;
 
-    private void Awake()
+    public SummonService(ISummonApi api, IBoardService board, IGoldService gold, IGameStateService gameState)
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        this.api = api;
+        this.board = board;
+        this.gold = gold;
+        this.gameState = gameState;
+    }
 
-        Instance = this;
-        gameState = ServiceLocator.Resolve<IGameStateService>();
-        gold = ServiceLocator.Resolve<IGoldService>();
-        service = new LocalSummonService(board, gold, ServiceLocator.Resolve<IDataTableService>());
+    public void Dispose()
+    {
+        cts.Cancel();
+        cts.Dispose();
     }
 
     /// <summary>
@@ -40,7 +39,7 @@ public class SummonManager : MonoBehaviour
         if (!CanRequest())
             return;
 
-        SummonAsync(destroyCancellationToken).Forget();
+        SummonAsync(cts.Token).Forget();
     }
 
     /// <summary>
@@ -52,7 +51,7 @@ public class SummonManager : MonoBehaviour
         if (!CanRequest())
             return;
 
-        MergeAsync(slotIndex, destroyCancellationToken).Forget();
+        MergeAsync(slotIndex, cts.Token).Forget();
     }
 
     private bool CanRequest()
@@ -65,7 +64,7 @@ public class SummonManager : MonoBehaviour
         isRequesting = true;
         try
         {
-            SummonResult result = await service.SummonAsync(token);
+            SummonResult result = await api.SummonAsync(token);
 
             if (result.Code != ErrorCode.Ok)
             {
@@ -88,7 +87,7 @@ public class SummonManager : MonoBehaviour
         isRequesting = true;
         try
         {
-            MergeResult result = await service.MergeAsync(slotIndex, token);
+            MergeResult result = await api.MergeAsync(slotIndex, token);
 
             if (result.Code != ErrorCode.Ok)
             {

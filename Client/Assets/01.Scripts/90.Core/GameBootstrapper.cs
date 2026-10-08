@@ -18,6 +18,11 @@ public class GameBootstrapper : MonoBehaviour
     [SerializeField] private Monster[] monsterPrefabs;
     [SerializeField] private int monsterPoolInitialSize = 20;
 
+    [Header("유닛")]
+    [SerializeField] private BoardView boardView;
+    [SerializeField] private Unit[] unitPrefabs;
+    [SerializeField] private int unitPoolInitialSize = 5;
+
     private void Awake()
     {
         InstallServices();
@@ -51,6 +56,13 @@ public class GameBootstrapper : MonoBehaviour
         GameStateService gameState = new GameStateService(gold, wave);
         ServiceLocator.Bind<IGameStateService>(gameState);
 
-        // TODO: Board → SummonApi → Summon (4단계)
+        BoardService board = new BoardService(dataTable, pool, boardView, unitPrefabs, unitPoolInitialSize);
+        ServiceLocator.Bind<IBoardService>(board);
+
+        LocalSummonApi summonApi = new LocalSummonApi(board, gold, dataTable);
+        ServiceLocator.Bind<ISummonApi>(summonApi);
+
+        SummonService summon = new SummonService(summonApi, board, gold, gameState);
+        ServiceLocator.Bind<ISummonService>(summon);
     }
 }

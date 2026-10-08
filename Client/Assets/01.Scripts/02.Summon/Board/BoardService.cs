@@ -1,28 +1,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 유닛을 배치하는 보드 (씬마다 하나)
+// 유닛을 배치하는 보드 서비스
 // 슬롯 하나에 유닛 하나가 들어가며, 유닛 프리팹은 UnitData.Prefab과 이름이 같아야 한다.
-public class Board : MonoBehaviour
+// 슬롯 위치는 BoardView에서 받는다.
+public class BoardService : IBoardService
 {
-    [Header("슬롯 위치")]
-    [SerializeField] private Transform[] slots;
+    private readonly IDataTableService dataTable;
+    private readonly IPoolService pool;
+    private readonly BoardView view;
+    private readonly Unit[] unitPrefabs;
+    private readonly int poolInitialSize;
 
-    [Header("유닛 프리팹")]
-    [SerializeField] private Unit[] unitPrefabs;
-    [SerializeField] private int poolInitialSize = 5;
+    private readonly Unit[] units;
 
-    private Unit[] units;
-    private IDataTableService dataTable;
-    private IPoolService pool;
+    public int SlotCount => units.Length;
 
-    public int SlotCount => slots.Length;
-
-    private void Awake()
+    public BoardService(
+        IDataTableService dataTable,
+        IPoolService pool,
+        BoardView view,
+        Unit[] unitPrefabs,
+        int poolInitialSize)
     {
-        units = new Unit[slots.Length];
-        dataTable = ServiceLocator.Resolve<IDataTableService>();
-        pool = ServiceLocator.Resolve<IPoolService>();
+        this.dataTable = dataTable;
+        this.pool = pool;
+        this.view = view;
+        this.unitPrefabs = unitPrefabs;
+        this.poolInitialSize = poolInitialSize;
+
+        units = new Unit[view.SlotCount];
     }
 
     public Unit GetUnit(int slotIndex)
@@ -82,7 +89,7 @@ public class Board : MonoBehaviour
         if (go == null)
             return null;
 
-        go.transform.position = slots[slotIndex].position;
+        go.transform.position = view.GetSlotPosition(slotIndex);
 
         Unit unit = go.GetComponent<Unit>();
         unit.Init(data, slotIndex);
